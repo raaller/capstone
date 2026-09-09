@@ -7092,6 +7092,104 @@ test_cases:
           regs_write: [ zmm24 ]
   -
     input:
+      name: "issue 3069 EVEX writemask access (AT&T)"
+      bytes: [ 0x62,0x41,0x04,0xcf,0x59,0xc5 ]
+      arch: "CS_ARCH_X86"
+      options: [ CS_MODE_64, CS_OPT_DETAIL, CS_OPT_SYNTAX_ATT ]
+      address: 0x0
+    expected:
+      insns:
+      -
+        asm_text: "vmulps %zmm13, %zmm15, %zmm24 {%k7} {z}"
+        details:
+          x86:
+            operands:
+              -
+                type: X86_OP_REG
+                reg: zmm13
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm15
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm24
+                access: CS_AC_WRITE
+              -
+                type: X86_OP_REG
+                reg: k7
+                access: CS_AC_READ
+                avx_zero_opmask: 1
+          regs_read: [ zmm13, zmm15, k7 ]
+          regs_write: [ zmm24 ]
+  -
+    input:
+      name: "issue 3069 EVEX merging writemask access (AT&T)"
+      bytes: [ 0x62,0x41,0x04,0x4f,0x59,0xc5 ]
+      arch: "CS_ARCH_X86"
+      options: [ CS_MODE_64, CS_OPT_DETAIL, CS_OPT_SYNTAX_ATT ]
+      address: 0x0
+    expected:
+      insns:
+      -
+        asm_text: "vmulps %zmm13, %zmm15, %zmm24 {%k7}"
+        details:
+          x86:
+            operands:
+              -
+                type: X86_OP_REG
+                reg: zmm13
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm15
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm24
+                access: CS_AC_READ_WRITE
+              -
+                type: X86_OP_REG
+                reg: k7
+                access: CS_AC_READ
+          regs_read: [ zmm13, zmm15, zmm24, k7 ]
+          regs_write: [ zmm24 ]
+  -
+    input:
+      name: "issue 3069 EVEX memory operand access (AT&T)"
+      bytes: [ 0x62,0x41,0x04,0xcf,0x59,0x05,0x00,0x00,0x00,0x00 ]
+      arch: "CS_ARCH_X86"
+      options: [ CS_MODE_64, CS_OPT_DETAIL, CS_OPT_SYNTAX_ATT ]
+      address: 0x0
+    expected:
+      insns:
+      -
+        asm_text: "vmulps (%rip), %zmm15, %zmm24 {%k7} {z}"
+        details:
+          x86:
+            operands:
+              -
+                type: X86_OP_MEM
+                mem_base: rip
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm15
+                access: CS_AC_READ
+              -
+                type: X86_OP_REG
+                reg: zmm24
+                access: CS_AC_WRITE
+              -
+                type: X86_OP_REG
+                reg: k7
+                access: CS_AC_READ
+                avx_zero_opmask: 1
+          regs_read: [ rip, zmm15, k7 ]
+          regs_write: [ zmm24 ]
+  -
+    input:
       name: "issue 3038 x86-64 RET with operand-size override and REX.W"
       bytes: [ 0x66, 0x48, 0xc3 ]
       arch: "CS_ARCH_X86"

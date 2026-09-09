@@ -1395,6 +1395,14 @@ bool X86_getInstruction(csh ud, const uint8_t *code, size_t code_len,
 			if (insn.hasLockPrefix)
 				Flags |= X86_IP_HAS_LOCK;
 
+			for (int i = 0; i < X86_MAX_OPERANDS; ++i) {
+				if (insn.operands[i].encoding ==
+				    ENCODING_WRITEMASK) {
+					Flags |= X86_IP_HAS_EVEX_OPMASK;
+					break;
+				}
+			}
+
 			instr->flags = Flags;
 		}
 

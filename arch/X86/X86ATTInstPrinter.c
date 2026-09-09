@@ -315,6 +315,34 @@ static void get_op_access(cs_struct *h, unsigned int id, uint8_t *access,
 	}
 }
 
+static void fixup_evex_opmask_access(MCInst *MI)
+{
+	cs_x86 *x86 = &MI->flat_insn->detail->x86;
+	const uint8_t *arr;
+	uint8_t count, i, access_index = 0;
+	if (!(MI->flags & X86_IP_HAS_EVEX_OPMASK))
+		return;
+
+	arr = X86_get_op_access(MI->csh, MCInst_getOpcode(MI), &x86->eflags);
+	if (!arr)
+		return;
+	for (count = 0; count < CS_X86_MAXIMUM_OPERAND_SIZE; ++count) {
+		if (!arr[count])
+			break;
+	}
+	if (count < 2 || count != x86->op_count)
+		return;
+
+	for (i = count; i > 2; --i) {
+		x86->operands[access_index].access = arr[i - 1];
+		if (x86->operands[access_index].access == CS_AC_IGNORE)
+			x86->operands[access_index].access = 0;
+		access_index++;
+	}
+	x86->operands[access_index++].access = arr[0];
+	x86->operands[access_index].access = arr[1];
+}
+
 static void printSrcIdx(MCInst *MI, unsigned Op, SStream *O)
 {
 	MCOperand *SegReg;
@@ -1208,6 +1236,7 @@ void X86_ATT_printInst(MCInst *MI, SStream *OS, void *info)
 			      &MI->flat_insn->detail->x86.eflags);
 		MI->flat_insn->detail->x86.operands[0].access = access[0];
 		MI->flat_insn->detail->x86.operands[1].access = access[1];
+		fixup_evex_opmask_access(MI);
 #endif
 	}
 }
