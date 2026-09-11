@@ -1201,6 +1201,10 @@ cs_err CAPSTONE_API cs_option(csh ud, cs_opt_type type, uintptr_t value)
 		handle->PrintBranchImmAsAddress = value == CS_OPT_ON ? false :
 								       true;
 		return CS_ERR_OK;
+	case CS_OPT_X86_JCC_MODE:
+		if (handle->arch != CS_ARCH_X86)
+			return CS_ERR_OPTION;
+		break;
 	}
 
 	if (!arch_configs[handle->arch].arch_option)

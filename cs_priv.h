@@ -105,6 +105,7 @@ struct cs_struct {
 	bool doing_SME_Index; // handling a SME instruction that has index
 	unsigned short *insn_cache; // index caching for mapping.c
 	uint16_t *x86_insn_lut; // x86 instruction id -> insns[] index
+	cs_opt_x86_jcc_mode x86_jcc_mode;
 	uint32_t *x86_insn_reg_lut; // x86 packed Intel/ATT implicit register entries
 	unsigned int x86_insn_lut_max;
 	// A mapping of LLVM instruction IDs to capstone instruction IDs, with

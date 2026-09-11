@@ -1327,6 +1327,7 @@ bool X86_getInstruction(csh ud, const uint8_t *code, size_t code_len,
 	info.code = code;
 	info.size = code_len;
 	info.offset = address;
+	insn.jccMode = handle->x86_jcc_mode;
 
 	if (instr->flat_insn->detail) {
 		// instr->flat_insn->detail initialization: 3 alternatives

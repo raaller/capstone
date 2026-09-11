@@ -22,6 +22,7 @@ cs_err X86_global_init(cs_struct *ud)
 	// by default, we use Intel syntax
 	ud->printer = X86_Intel_printInst;
 	ud->syntax = CS_OPT_SYNTAX_INTEL;
+	ud->x86_jcc_mode = CS_OPT_X86_JCC_DEFAULT;
 	ud->printer_info = mri;
 	ud->disasm = X86_getInstruction;
 	ud->reg_name = X86_reg_name;
@@ -47,6 +48,15 @@ cs_err X86_option(cs_struct *handle, cs_opt_type type, size_t value)
 {
 	switch (type) {
 	default:
+		break;
+	case CS_OPT_X86_JCC_MODE:
+		if (value != CS_OPT_X86_JCC_DEFAULT &&
+		    value != CS_OPT_X86_JCC_INTEL &&
+		    value != CS_OPT_X86_JCC_AMD) {
+			handle->errnum = CS_ERR_OPTION;
+			return CS_ERR_OPTION;
+		}
+		handle->x86_jcc_mode = (cs_opt_x86_jcc_mode)value;
 		break;
 	case CS_OPT_MODE:
 		if (value == CS_MODE_64)

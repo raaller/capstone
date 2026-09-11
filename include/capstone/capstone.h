@@ -385,7 +385,21 @@ typedef enum cs_opt_type {
 	CS_OPT_UNSIGNED, ///< print immediate operands in unsigned form
 	CS_OPT_ONLY_OFFSET_BRANCH, ///< ARM, PPC, AArch64: Don't add the branch immediate value to the PC.
 	CS_OPT_LITBASE, ///< Xtensa, set the LITBASE value. LITBASE is set to 0 by default.
+	CS_OPT_X86_JCC_MODE, ///< X86: decoding policy for operand-size-prefixed near Jcc in 64-bit mode.
 } cs_opt_type;
+
+/// Values for CS_OPT_X86_JCC_MODE. This option is independent of assembly
+/// syntax and the host CPU. It does not affect CALL, JMP, short Jcc, or
+/// decoding in 16/32-bit mode.
+typedef enum cs_opt_x86_jcc_mode {
+	/// Preserve legacy decoding, including the different handling of
+	/// 66 0F 80/81 (rel16) and 66 0F 82..8F (rel32).
+	CS_OPT_X86_JCC_DEFAULT = 0,
+	/// Ignore 66 and decode rel32 for all near Jcc in 64-bit mode.
+	CS_OPT_X86_JCC_INTEL,
+	/// Decode rel16 with 66 unless an effective REX.W overrides it.
+	CS_OPT_X86_JCC_AMD,
+} cs_opt_x86_jcc_mode;
 
 /// Runtime option value (associated with option type above)
 typedef enum cs_opt_value {

@@ -248,6 +248,10 @@ __all__ = [
     "CS_OPT_MNEMONIC",
     "CS_OPT_UNSIGNED",
     "CS_OPT_ONLY_OFFSET_BRANCH",
+    "CS_OPT_X86_JCC_MODE",
+    "CS_OPT_X86_JCC_DEFAULT",
+    "CS_OPT_X86_JCC_INTEL",
+    "CS_OPT_X86_JCC_AMD",
     "CS_ERR_OK",
     "CS_ERR_MEM",
     "CS_ERR_ARCH",
@@ -591,6 +595,11 @@ CS_OPT_SKIPDATA_SETUP = 6  # Setup user-defined function for SKIPDATA option
 CS_OPT_MNEMONIC = 7  # Customize instruction mnemonic
 CS_OPT_UNSIGNED = 8  # Print immediate in unsigned form
 CS_OPT_ONLY_OFFSET_BRANCH = 9  # ARM, prints branch immediates without offset.
+CS_OPT_X86_JCC_MODE = 11  # X86 near Jcc decoding in 64-bit mode (10 is LITBASE).
+
+CS_OPT_X86_JCC_DEFAULT = 0  # Preserve legacy decoding.
+CS_OPT_X86_JCC_INTEL = 1  # Ignore 66 on near Jcc in 64-bit mode.
+CS_OPT_X86_JCC_AMD = 2  # Honor 66 unless overridden by an effective REX.W.
 
 # Capstone option value
 CS_OPT_OFF = 0  # Turn OFF an option - default option of CS_OPT_DETAIL
@@ -1563,6 +1572,7 @@ class Cs(object):
         # because C code uses it by reference
         self._skipdata_opt = _cs_opt_skipdata()
         self._skipdata = False
+        self._x86_jcc_mode = CS_OPT_X86_JCC_DEFAULT
 
     # destructor to be called automatically when object is destroyed.
     def __del__(self):
@@ -1584,6 +1594,17 @@ class Cs(object):
             self._skipdata = opt_value == CS_OPT_ON
         elif opt_type == CS_OPT_UNSIGNED:
             self._imm_unsigned = opt_value == CS_OPT_ON
+        elif opt_type == CS_OPT_X86_JCC_MODE:
+            self._x86_jcc_mode = opt_value
+
+    @property
+    def x86_jcc_mode(self):
+        """Decoding policy for 66-prefixed near Jcc in 64-bit mode."""
+        return self._x86_jcc_mode
+
+    @x86_jcc_mode.setter
+    def x86_jcc_mode(self, mode):
+        self.option(CS_OPT_X86_JCC_MODE, mode)
 
     # is this a diet engine?
     @property
