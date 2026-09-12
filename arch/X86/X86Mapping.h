@@ -96,9 +96,6 @@ void X86_reg_access(const cs_insn *insn, cs_regs regs_read,
 // given the instruction id, return the size of its immediate operand (or 0)
 uint8_t X86_immediate_size(unsigned int id, uint8_t *enc_size);
 
-// Compute a relative branch target, including AMD rel16 Jcc truncation.
-int64_t X86_pcrel_imm(const MCInst *MI, int64_t displacement);
-
 unsigned short X86_register_map(unsigned short id);
 
 unsigned int find_insn(unsigned int id);

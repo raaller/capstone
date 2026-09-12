@@ -50,13 +50,16 @@ cs_err X86_option(cs_struct *handle, cs_opt_type type, size_t value)
 	default:
 		break;
 	case CS_OPT_X86_JCC_MODE:
-		if (value != CS_OPT_X86_JCC_DEFAULT &&
-		    value != CS_OPT_X86_JCC_INTEL &&
-		    value != CS_OPT_X86_JCC_AMD) {
+		switch (value) {
+		default:
 			handle->errnum = CS_ERR_OPTION;
 			return CS_ERR_OPTION;
+		case CS_OPT_X86_JCC_DEFAULT:
+		case CS_OPT_X86_JCC_INTEL:
+		case CS_OPT_X86_JCC_AMD:
+			handle->x86_jcc_mode = (int)value;
+			break;
 		}
-		handle->x86_jcc_mode = (cs_opt_x86_jcc_mode)value;
 		break;
 	case CS_OPT_MODE:
 		if (value == CS_MODE_64)

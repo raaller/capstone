@@ -1,6 +1,6 @@
 test_cases:
   - input:
-      name: "x86 Jcc default preserves JO rel16 and its legacy target"
+      name: "Jcc DEFAULT: JO rel16"
       bytes: [0x66, 0x0f, 0x80, 0xce, 0xfa, 0xa5, 0xd8]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL]
@@ -20,7 +20,7 @@ test_cases:
         - asm_text: "movsd dword ptr [rdi], dword ptr [rsi]"
           size: 1
   - input:
-      name: "x86 Jcc default preserves JB rel32"
+      name: "Jcc DEFAULT: JB rel32"
       bytes: [0x66, 0x0f, 0x82, 0xce, 0xfa, 0xa5, 0xd8]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_DEFAULT]
@@ -37,7 +37,7 @@ test_cases:
                   imm: -660210987
                   size: 4
   - input:
-      name: "x86 AMD JO truncates target and retains the following move"
+      name: "Jcc AMD: JO rel16 and following MOVSD"
       bytes: [0x66, 0x0f, 0x80, 0xce, 0xfa, 0xa5, 0xd8]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD]
@@ -57,7 +57,7 @@ test_cases:
         - asm_text: "movsd dword ptr [rdi], dword ptr [rsi]"
           size: 1
   - input:
-      name: "x86 AMD JNO in AT&T syntax retains movsl"
+      name: "Jcc AMD: JNO in AT&T syntax"
       bytes: [0x66, 0x0f, 0x81, 0xce, 0xfa, 0xa5, 0xd8]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD, CS_OPT_SYNTAX_ATT]
@@ -76,7 +76,7 @@ test_cases:
         - asm_text: "movsl (%rsi), (%rdi)"
           size: 1
   - input:
-      name: "x86 AMD JB also consumes rel16"
+      name: "Jcc AMD: JB target wraparound"
       bytes: [0x66, 0x0f, 0x82, 0x01, 0x00]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD]
@@ -93,7 +93,7 @@ test_cases:
                   imm: 4
                   size: 2
   - input:
-      name: "x86 AMD near Jcc with effective REX.W consumes rel32"
+      name: "Jcc AMD: REX.W overrides 66"
       bytes: [0x66, 0x48, 0x0f, 0x80, 0xce, 0xfa, 0xa5, 0xd8]
       arch: CS_ARCH_X86
       options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD]
@@ -110,3 +110,57 @@ test_cases:
                 - type: X86_OP_IMM
                   imm: -660210986
                   size: 8
+  - input:
+      name: "Jcc AMD: 66 after REX.W"
+      bytes: [0x48, 0x66, 0x0f, 0x80, 0xce, 0xfa, 0xa5, 0xd8]
+      arch: CS_ARCH_X86
+      options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD]
+      address: 0
+    expected:
+      insns:
+        - asm_text: "jo 0xfad4"
+          size: 6
+          details:
+            x86:
+              enc_imm_offset: 4
+              enc_imm_size: 2
+              operands:
+                - type: X86_OP_IMM
+                  imm: 0xfad4
+                  size: 2
+        - asm_text: "movsd dword ptr [rdi], dword ptr [rsi]"
+          size: 1
+  - input:
+      name: "Jcc Intel: JG rel32"
+      bytes: [0x66, 0x0f, 0x8f, 0xce, 0xfa, 0xa5, 0xd8]
+      arch: CS_ARCH_X86
+      options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_INTEL]
+      address: 0
+    expected:
+      insns:
+        - asm_text: "jg 0xffffffffd8a5fad5"
+          size: 7
+          details:
+            x86:
+              enc_imm_size: 4
+              operands:
+                - type: X86_OP_IMM
+                  imm: -660210987
+                  size: 8
+  - input:
+      name: "Jcc AMD: JG rel16"
+      bytes: [0x66, 0x0f, 0x8f, 0xce, 0xfa]
+      arch: CS_ARCH_X86
+      options: [CS_MODE_64, CS_OPT_DETAIL, CS_OPT_X86_JCC_AMD]
+      address: 0
+    expected:
+      insns:
+        - asm_text: "jg 0xfad3"
+          size: 5
+          details:
+            x86:
+              enc_imm_size: 2
+              operands:
+                - type: X86_OP_IMM
+                  imm: 0xfad3
+                  size: 2

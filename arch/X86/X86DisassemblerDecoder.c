@@ -1273,9 +1273,8 @@ static int getID(struct InternalInstruction *insn)
 		attrMask ^= ATTR_ADSIZE;
 
 	/*
-	 * Preserve the legacy CALL/JMP behavior in 64-bit mode. For near Jcc,
-	 * an explicit policy selects Intel or AMD handling of 66; DEFAULT keeps
-	 * the historical distinction between JO/JNO and the other conditions.
+	 * CALL/JMP ignore 66 in 64-bit mode. Near Jcc use the selected policy;
+	 * DEFAULT preserves the different handling of JO/JNO and other Jcc.
 	 */
 	if ((insn->mode == MODE_64BIT) && insn->hasOpSize) {
 		switch (insn->opcode) {
@@ -1308,27 +1307,24 @@ static int getID(struct InternalInstruction *insn)
 			if (insn->opcodeType != TWOBYTE)
 				break;
 
-			if (insn->jccMode == CS_OPT_X86_JCC_DEFAULT ||
-			    insn->vectorExtensionType != TYPE_NO_VEX_XOP) {
-				if (insn->opcode >= 0x82) {
-					attrMask ^= ATTR_OPSIZE;
+			if (insn->jccMode != CS_OPT_X86_JCC_DEFAULT &&
+			    insn->vectorExtensionType == TYPE_NO_VEX_XOP) {
+				if (insn->jccMode == CS_OPT_X86_JCC_AMD &&
+				    !wFromREX(insn->rexPrefix)) {
+					attrMask |= ATTR_OPSIZE;
+					insn->immediateSize = 2;
+					insn->displacementSize = 2;
+					insn->immSize = 2;
+				} else {
+					attrMask &= ~ATTR_OPSIZE;
 					insn->immediateSize = 4;
 					insn->displacementSize = 4;
+					insn->immSize = 8;
 				}
-				break;
-			}
-
-			if (insn->jccMode == CS_OPT_X86_JCC_AMD &&
-			    !(insn->rexPrefix & 0x08)) {
-				attrMask |= ATTR_OPSIZE;
-				insn->immediateSize = 2;
-				insn->displacementSize = 2;
-				insn->immSize = 2;
-			} else {
-				attrMask &= ~ATTR_OPSIZE;
+			} else if (insn->opcode >= 0x82) {
+				attrMask ^= ATTR_OPSIZE;
 				insn->immediateSize = 4;
 				insn->displacementSize = 4;
-				insn->immSize = 8;
 			}
 			break;
 		}

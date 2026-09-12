@@ -2536,39 +2536,6 @@ void X86_reg_access(const cs_insn *insn, cs_regs regs_read,
 }
 #endif
 
-int64_t X86_pcrel_imm(const MCInst *MI, int64_t displacement)
-{
-	uint64_t target =
-		(uint64_t)displacement + MI->flat_insn->size + MI->address;
-	if (MI->csh->mode != CS_MODE_64)
-		return target & 0xffffffff;
-
-	if (MI->csh->x86_jcc_mode == CS_OPT_X86_JCC_AMD) {
-		switch (MCInst_getOpcode(MI)) {
-		case X86_JO_2:
-		case X86_JNO_2:
-		case X86_JB_2:
-		case X86_JAE_2:
-		case X86_JE_2:
-		case X86_JNE_2:
-		case X86_JBE_2:
-		case X86_JA_2:
-		case X86_JS_2:
-		case X86_JNS_2:
-		case X86_JP_2:
-		case X86_JNP_2:
-		case X86_JL_2:
-		case X86_JGE_2:
-		case X86_JLE_2:
-		case X86_JG_2:
-			return target & 0xffff;
-		default:
-			break;
-		}
-	}
-	return (int64_t)target;
-}
-
 // map immediate size to instruction id
 // this array is sorted for binary searching
 static const struct size_id {

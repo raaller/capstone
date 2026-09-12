@@ -26,7 +26,6 @@
 #endif
 
 #include "X86DisassemblerDecoderCommon.h"
-#include "capstone/capstone.h"
 
 /*
  * Accessor functions for various fields of an Intel instruction
@@ -615,7 +614,7 @@ typedef struct InternalInstruction {
 	/* The mode to disassemble for (64-bit, protected, real) */
 	DisassemblerMode mode;
 	/* Policy for operand-size-prefixed near Jcc in 64-bit mode. */
-	cs_opt_x86_jcc_mode jccMode;
+	int jccMode;
 	/* The start of the instruction, usable with the reader */
 	uint64_t startLocation;
 	/* The length of the instruction, in bytes */
